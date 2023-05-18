@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { getImages } from 'api';
 import { GlobalStyle } from '../GlobalStyle';
 import { ImageGallery } from '../ImageGallery/ImageGallery';
@@ -13,80 +13,80 @@ const Status = {
   REJECTED: 'rejected',
   RESOLVED: 'resolved',
 };
-export class App extends Component {
-  state = {
-    searchText: '',
-    page: 1,
-    totalPages: 0,
-    images: [],
-    error: null,
-    status: Status.IDLE,
-  };
 
-  async componentDidUpdate(prevProps, prevState) {
-    const { searchText, page } = this.state;
+export const App = () => {
+  const [searchText, setSearchText] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [images, setImages] = useState([]);
+  const [error, setError] = useState(null);
+  const [status, setStatus] = useState(Status.IDLE);
 
-    if (prevState.searchText !== searchText || prevState.page !== page) {
+  useEffect(() => {
+    if (!searchText) {
+      return;
+    }
+    async function searchImages() {
       try {
-        this.setState({ status: Status.PENDING });
+        /* Задаємо статус */
+        setStatus(Status.PENDING);
 
+        /* Пошук зображень */
         const { fetchImages, total, per_page } = await getImages(
           searchText,
           page
         );
 
-        const totalPages = Math.floor(total / per_page);
-        this.setState(prevState => ({
-          images: [...prevState.images, ...fetchImages],
-          totalPages,
-          status: Status.RESOLVED,
-        }));
+        /* Задаємо зображення */
+        setImages(prevState => [...prevState, ...fetchImages]);
+
+        /* Задаємо загальну кількість сторінок */
+        setTotalPages(Math.floor(total / per_page));
+
+        /* Задаємо статус */
+        setStatus(Status.RESOLVED);
       } catch (error) {
-        this.setState({ error, status: Status.REJECTED });
+        /* Задаємо помилку  */
+        setError(error);
+
+        /* Задаємо статус */
+        setStatus(Status.RESOLVED);
       }
     }
-  }
+
+    searchImages();
+  }, [searchText, page]);
 
   /* Задати пошуковий запит */
-  handleSearchText = searchText => {
-    this.setState({
-      searchText,
-      images: [],
-      page: 1,
-      totalPages: 0,
-    });
+  const handleSearchText = searchText => {
+    setSearchText(searchText);
+    setImages([]);
+    setPage(1);
+    setTotalPages(0);
   };
 
   /* Завантажити більше зображень */
-  loadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const loadMore = () => {
+    setPage(prevState => prevState + 1);
   };
 
-  render() {
-    const { images, page, totalPages, error, status } = this.state;
-
-    return (
-      <>
-        <GlobalStyle />
-        <Searchbar onSubmit={this.handleSearchText} />
-        {status === Status.PENDING && <Loader />}
-        {status === Status.REJECTED && (
-          <ErrorMess>Помилка: {error.message}</ErrorMess>
-        )}
-        {status === Status.RESOLVED && images && (
-          <>
-            <ImageGallery images={images} />
-            {totalPages > page && (
-              <Button onClick={this.loadMore}>Load more</Button>
-            )}
-          </>
-        )}
-        {status === Status.RESOLVED && images.length === 0 && (
-          <ErrorMess>Sorry. There are no images.</ErrorMess>
-        )}
-      </>
-    );
-  }
-}
+  return (
+    <>
+      <GlobalStyle />
+      <Searchbar onSubmit={handleSearchText} />
+      {status === Status.PENDING && <Loader />}
+      {status === Status.REJECTED && (
+        <ErrorMess>Помилка: {error.message}</ErrorMess>
+      )}
+      {status === Status.RESOLVED && images && (
+        <>
+          <ImageGallery images={images} />
+          {totalPages > page && <Button onClick={loadMore}>Load more</Button>}
+        </>
+      )}
+      {status === Status.RESOLVED && images.length === 0 && (
+        <ErrorMess>Sorry. There are no images.</ErrorMess>
+      )}
+    </>
+  );
+};
