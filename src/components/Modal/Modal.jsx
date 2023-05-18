@@ -7,11 +7,11 @@ const modalRoot = document.querySelector('#modal-root');
 export const Modal = ({ children, onClose }) => {
   useEffect(() => {
     /* Реєструємо прослуховувача події*/
-    window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       /* Видаляємо прослуховувача події*/
-      window.removeEventListener('keydown', this.handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
