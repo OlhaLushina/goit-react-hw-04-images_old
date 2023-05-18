@@ -6,6 +6,13 @@ const modalRoot = document.querySelector('#modal-root');
 
 export const Modal = ({ children, onClose }) => {
   useEffect(() => {
+    /* Закриваємо модалку по Esc */
+    const handleKeyDown = e => {
+      if (e.code === 'Escape') {
+        onClose();
+      }
+    };
+
     /* Реєструємо прослуховувача події*/
     window.addEventListener('keydown', handleKeyDown);
 
@@ -13,14 +20,7 @@ export const Modal = ({ children, onClose }) => {
       /* Видаляємо прослуховувача події*/
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
-
-  /* Закриваємо модалку по Esc */
-  const handleKeyDown = e => {
-    if (e.code === 'Escape') {
-      onClose();
-    }
-  };
+  }, [onClose]);
 
   /* Закриваємо модалку по backdrop */
   const handleBackdropClick = e => {
