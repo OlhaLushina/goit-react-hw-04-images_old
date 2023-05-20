@@ -38,7 +38,11 @@ export const App = () => {
         );
 
         /* Задаємо зображення */
-        setImages(prevState => [...prevState, ...fetchImages]);
+        if (page === 1) {
+          setImages(fetchImages);
+        } else {
+          setImages(prevState => [...prevState, ...fetchImages]);
+        }
 
         /* Задаємо загальну кількість сторінок */
         setTotalPages(Math.floor(total / per_page));
@@ -60,9 +64,7 @@ export const App = () => {
   /* Задати пошуковий запит */
   const handleSearchText = searchText => {
     setSearchText(searchText);
-    setImages([]);
     setPage(1);
-    setTotalPages(0);
   };
 
   /* Завантажити більше зображень */
